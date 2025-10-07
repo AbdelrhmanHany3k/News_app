@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_app/Screens/Categories_tab.dart';
 import 'package:news_app/Screens/Home.dart';
 
 void main(){

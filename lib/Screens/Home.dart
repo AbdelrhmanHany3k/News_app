@@ -1,11 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:news_app/Screens/Categories_tab.dart';
+import 'package:news_app/Screens/Drawer.dart';
 import 'package:news_app/Screens/Tab_bar.dart';
-import 'package:news_app/api%20manger/api_manger.dart';
+import 'package:news_app/models/CategoryModel.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   static const String routename = "home";
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  CategoryModel? selectedCategory;
+
+  void onCategorySelect(CategoryModel cat) {
+    setState(() {
+      selectedCategory = cat;
+    });
+  }
+
+  void showCategoriesTab() {
+    setState(() {
+      selectedCategory = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +38,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       child: Scaffold(
-        drawer: const Drawer(),
+        drawer: DrawerWidget(onCategoryClick: showCategoriesTab),
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white, size: 25),
@@ -37,31 +58,9 @@ class HomeScreen extends StatelessWidget {
           ),
           backgroundColor: Colors.green,
         ),
-        body:Column(
-          children: [
-            TabBarWidget(),
-            FutureBuilder(future: ApiManager.getnewsdata("abc-news"),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return const Center(child: Text("Something went wrong"));
-              }
-              var articles=snapshot.data?.articles??[];
-              return Expanded(
-                child: ListView.separated(separatorBuilder: (context, index) {
-                  return SizedBox(height: 20,);
-                },
-                  itemBuilder: (context, index) {
-                  return Text(articles[index].title??"");
-                   },itemCount: articles.length,
-                ),
-              );
-            },
-            )
-          ],
-        )
+        body: selectedCategory == null
+            ? CategoriesTab(onClicked: onCategorySelect)
+            : TabBarWidget(id: selectedCategory!.id),
       ),
     );
   }
