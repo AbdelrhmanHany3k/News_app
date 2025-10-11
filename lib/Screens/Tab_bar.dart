@@ -1,82 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'package:news_app/Bloc/cubit.dart';
+import 'package:news_app/Bloc/states.dart';
 import 'package:news_app/Screens/News_item.dart';
-import 'package:news_app/Screens/tab_item.dart';
-import 'package:news_app/api%20manger/api_manger.dart';
-import 'package:news_app/models/SourceResponse.dart';
 
-class TabBarWidget extends StatefulWidget {
-  String id;
-  TabBarWidget({super.key, required this.id});
-
-  @override
-  State<TabBarWidget> createState() => _TabBarWidgetState();
-}
-
-class _TabBarWidgetState extends State<TabBarWidget> {
-  int selectedIndex = 0;
-  late Future<SourceResponse> sourcesFuture;
+class TabBarWidget extends StatelessWidget {
+  final String id;
+  const TabBarWidget({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: ApiManager.getSources(widget.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text("Something went wrong"));
-        }
+    return LoaderOverlay(
+      child: BlocProvider(
+        create: (context) => HomeCubit()..getSources(id),
+        child: BlocConsumer<HomeCubit, HomeStates>(
+          listener: (context, state) {
+            if (state is HomeGetSourceLoadingState || state is HomeGetNewsDataLoadingState) {
+              context.loaderOverlay.show();
+            } else {
+              context.loaderOverlay.hide();
+            }
 
-        var sources = snapshot.data?.sources ?? [];
+            if (state is HomeGetSourceErrorState || state is HomeGetNewsDataErrorState) {
+              String error = state is HomeGetSourceErrorState ? state.error : "Failed to load news";
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+            }
+          },
+          builder: (context, state) {
+            var cubit = HomeCubit.getCubit(context);
+            var sources = cubit.sourceResponse?.sources ?? [];
 
-        return Column(
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: List.generate(sources.length, (index) {
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = index;
-                      });
+            if (sources.isEmpty) return const Center(child: Text("No sources available"));
+
+            return DefaultTabController(
+              length: sources.length,
+              child: Column(
+                children: [
+                  TabBar(
+                    isScrollable: true,
+                    indicatorColor: Colors.green,
+                    labelColor: Colors.green,
+                    unselectedLabelColor: Colors.grey,
+                    onTap: (index) {
+                      cubit.getNewsData(index);
                     },
-                    child: TabItem(
-                      source: sources[index],
-                      isSelected: selectedIndex == index,
+                    tabs: sources.map((s) => Tab(text: s.name ?? "")).toList(),
+                  ),
+                  Expanded(
+                    child: BlocBuilder<HomeCubit, HomeStates>(
+                      builder: (context, state) {
+                        var articles = cubit.newsDataResponse?.articles ?? [];
+                        if (articles.isEmpty) return const Center(child: Text("No news found"));
+
+                        return TabBarView(
+                          children: sources.map((source) {
+                            return ListView.separated(
+                              separatorBuilder: (_, __) => const SizedBox(height: 15),
+                              itemCount: articles.length,
+                              itemBuilder: (_, index) => NewsItem(articles: articles[index]),
+                            );
+                          }).toList(),
+                        );
+                      },
                     ),
-                  );
-                }),
+                  ),
+                ],
               ),
-            ),
-            Expanded(
-              child: FutureBuilder(
-                future: ApiManager.getNewsData(sources[selectedIndex].id ?? ""),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return const Center(child: Text("Something went wrong"));
-                  }
-
-                  var articles = snapshot.data?.articles ?? [];
-                  return ListView.separated(
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 15),
-                    itemCount: articles.length,
-                    itemBuilder: (context, index) {
-                      return NewsItem(articles: articles[index]);
-                    },
-                  );
-                },
-              ),
-            )
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

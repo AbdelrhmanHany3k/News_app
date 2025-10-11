@@ -4,10 +4,14 @@ class NewsDataResponse {
   NewsDataResponse({
       this.status, 
       this.totalResults, 
-      this.articles,});
+      this.articles,
+      this.message,
+      this.code});
 
   NewsDataResponse.fromJson(dynamic json) {
     status = json['status'];
+    message=json['message'];
+    code=json['code'];
     totalResults = json['totalResults'];
     if (json['articles'] != null) {
       articles = [];
@@ -19,6 +23,8 @@ class NewsDataResponse {
   String? status;
   int? totalResults;
   List<Articles>? articles;
+  String? message;
+  String? code;
 
 
 
