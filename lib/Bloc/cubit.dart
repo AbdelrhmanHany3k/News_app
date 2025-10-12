@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app/Bloc/states.dart';
-import 'package:http/http.dart' as http;
 import 'package:news_app/models/NewsDataResponse.dart';
 import 'package:news_app/models/SourceResponse.dart';
+import 'package:news_app/repo/home_repo.dart';
 
 class HomeCubit extends Cubit<HomeStates> {
-  HomeCubit() : super(HomeInitState());
+  final HomeRepo repo;
+  HomeCubit(this.repo) : super(HomeInitState());
 
   NewsDataResponse? newsDataResponse;
   SourceResponse? sourceResponse;
@@ -18,25 +18,18 @@ class HomeCubit extends Cubit<HomeStates> {
   Future<void> getSources(String categoryId) async {
     emit(HomeGetSourceLoadingState());
     try {
-      Uri url = Uri.https("newsapi.org", "v2/top-headlines/sources", {
-        "apiKey": "23435f14ebbd4d07a773963f4b0f597e",
-        "category": categoryId
-      });
+      final sources = await repo.getSources(categoryId);
 
-      http.Response response = await http.get(url);
-      Map<String, dynamic> jsonFormat = jsonDecode(response.body);
-      SourceResponse sources = SourceResponse.fromJson(jsonFormat);
-
-      if (response.statusCode != 200) {
-        emit(HomeGetSourceErrorState(sources.message ?? ""));
+      if (sources.status != "ok") {
+        emit(HomeGetSourceErrorState(sources.message ?? "Error loading sources"));
         return;
       }
 
       sourceResponse = sources;
       emit(HomeGetSourceSuccessState(sources));
 
-      // Load news for first source automatically
-      if (sources.sources!.isNotEmpty) {
+      // Load news for the first source automatically
+      if (sources.sources != null && sources.sources!.isNotEmpty) {
         await getNewsData(0);
       }
     } catch (e) {
@@ -49,22 +42,15 @@ class HomeCubit extends Cubit<HomeStates> {
     emit(HomeGetNewsDataLoadingState());
 
     try {
-      String? sourceId = sourceResponse?.sources?[index].id;
+      final sourceId = sourceResponse?.sources?[index].id;
       if (sourceId == null) {
         emit(HomeGetNewsDataErrorState());
         return;
       }
 
-      Uri url = Uri.https("newsapi.org", "v2/everything", {
-        "apiKey": "23435f14ebbd4d07a773963f4b0f597e",
-        "sources": sourceId,
-      });
+      final newsData = await repo.getNewsData(sourceId);
 
-      http.Response response = await http.get(url);
-      Map<String, dynamic> jsonFormat = jsonDecode(response.body);
-      NewsDataResponse newsData = NewsDataResponse.fromJson(jsonFormat);
-
-      if (response.statusCode != 200) {
+      if (newsData.status != "ok") {
         emit(HomeGetNewsDataErrorState());
         return;
       }
