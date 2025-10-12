@@ -41,6 +41,14 @@ dependencies:
   bloc: ^9.0.1
   loader_overlay: ^4.0.4+1
   internet_connection_checker: ^3.0.1
+  flutter_native_splash: ^2.4.0
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/Splash.png
+  android_12:
+    image: assets/images/Splash.png
+    color: "#ffffff"
 
 
 dev_dependencies:
