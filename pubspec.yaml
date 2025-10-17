@@ -42,6 +42,9 @@ dependencies:
   loader_overlay: ^4.0.4+1
   internet_connection_checker: ^3.0.1
   flutter_native_splash: ^2.4.0
+  hive: ^2.2.3
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
 
 flutter_native_splash:
   color: "#ffffff"
@@ -52,6 +55,7 @@ flutter_native_splash:
 
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -64,7 +68,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
 # The following section is specific to Flutter packages.
 flutter:
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart'as http;
+import 'package:news_app/cache_helper/cache_helper.dart';
 import 'package:news_app/models/NewsDataResponse.dart';
 import 'package:news_app/models/SourceResponse.dart';
 import 'package:news_app/repo/home_repo.dart';
@@ -30,6 +31,7 @@ class HomeRemoteRepoImp implements HomeRepo{
     http.Response response = await http.get(url);
     Map<String, dynamic> jsonFormat = jsonDecode(response.body);
     SourceResponse sources = SourceResponse.fromJson(jsonFormat);
+    await CacheHelper.saveSources(sources);
     return sources;
   }
   

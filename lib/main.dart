@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -8,6 +7,7 @@ import 'package:news_app/observer.dart';
 bool hasInternet=false;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MyBlocObserver();
   final connectionChecker = InternetConnectionChecker.instance;
 

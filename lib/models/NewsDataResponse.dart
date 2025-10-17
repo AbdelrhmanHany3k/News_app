@@ -2,16 +2,17 @@ import 'package:news_app/models/SourceResponse.dart';
 
 class NewsDataResponse {
   NewsDataResponse({
-      this.status, 
-      this.totalResults, 
-      this.articles,
-      this.message,
-      this.code});
+    this.status,
+    this.totalResults,
+    this.articles,
+    this.message,
+    this.code,
+  });
 
   NewsDataResponse.fromJson(dynamic json) {
     status = json['status'];
-    message=json['message'];
-    code=json['code'];
+    message = json['message'];
+    code = json['code'];
     totalResults = json['totalResults'];
     if (json['articles'] != null) {
       articles = [];
@@ -20,26 +21,37 @@ class NewsDataResponse {
       });
     }
   }
+
   String? status;
   int? totalResults;
   List<Articles>? articles;
   String? message;
   String? code;
 
-
-
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    map['status'] = status;
+    map['message'] = message;
+    map['code'] = code;
+    map['totalResults'] = totalResults;
+    if (articles != null) {
+      map['articles'] = articles?.map((v) => v.toJson()).toList();
+    }
+    return map;
+  }
 }
 
 class Articles {
   Articles({
-      this.source, 
-      this.author, 
-      this.title, 
-      this.description, 
-      this.url, 
-      this.urlToImage, 
-      this.publishedAt, 
-      this.content,});
+    this.source,
+    this.author,
+    this.title,
+    this.description,
+    this.url,
+    this.urlToImage,
+    this.publishedAt,
+    this.content,
+  });
 
   Articles.fromJson(dynamic json) {
     source = json['source'] != null ? Sources.fromJson(json['source']) : null;
@@ -51,6 +63,7 @@ class Articles {
     publishedAt = json['publishedAt'];
     content = json['content'];
   }
+
   Sources? source;
   String? author;
   String? title;
@@ -60,6 +73,18 @@ class Articles {
   String? publishedAt;
   String? content;
 
-
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    if (source != null) {
+      map['source'] = source?.toJson();
+    }
+    map['author'] = author;
+    map['title'] = title;
+    map['description'] = description;
+    map['url'] = url;
+    map['urlToImage'] = urlToImage;
+    map['publishedAt'] = publishedAt;
+    map['content'] = content;
+    return map;
+  }
 }
-

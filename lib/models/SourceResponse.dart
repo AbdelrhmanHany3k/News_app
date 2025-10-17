@@ -1,14 +1,15 @@
 class SourceResponse {
   SourceResponse({
-      this.status,
-      this.sources,
-      this.message,
-      this.code});
+    this.status,
+    this.sources,
+    this.message,
+    this.code,
+  });
 
   SourceResponse.fromJson(dynamic json) {
     status = json['status'];
-    code=json['code'];
-    message=json['message'];
+    code = json['code'];
+    message = json['message'];
     if (json['sources'] != null) {
       sources = [];
       json['sources'].forEach((v) {
@@ -16,22 +17,34 @@ class SourceResponse {
       });
     }
   }
+
   String? status;
   List<Sources>? sources;
   String? code;
   String? message;
 
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    map['status'] = status;
+    map['code'] = code;
+    map['message'] = message;
+    if (sources != null) {
+      map['sources'] = sources?.map((v) => v.toJson()).toList();
+    }
+    return map;
+  }
 }
 
 class Sources {
   Sources({
-      this.id,
-      this.name,
-      this.description,
-      this.url,
-      this.category,
-      this.language,
-      this.country,});
+    this.id,
+    this.name,
+    this.description,
+    this.url,
+    this.category,
+    this.language,
+    this.country,
+  });
 
   Sources.fromJson(dynamic json) {
     id = json['id'];
@@ -42,6 +55,7 @@ class Sources {
     language = json['language'];
     country = json['country'];
   }
+
   String? id;
   String? name;
   String? description;
@@ -49,4 +63,16 @@ class Sources {
   String? category;
   String? language;
   String? country;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'url': url,
+      'category': category,
+      'language': language,
+      'country': country,
+    };
+  }
 }
